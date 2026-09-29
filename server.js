@@ -58,6 +58,7 @@ app.post('/api/login',async(q,s)=>{const u=await G('select * from users where lo
  s.cookie('t',jwt.sign({id:u.id},SECRET,{expiresIn:'12h'}),{httpOnly:true,sameSite:'lax',secure:E.NODE_ENV=='production',maxAge:432e5});s.json({name:u.name,role:u.role})});
 app.post('/api/logout',(q,s)=>{s.clearCookie('t');s.json({})});
 app.get('/api/me',STAFF,(q,s)=>s.json(q.u));
+app.put('/api/me',STAFF,async(q,s)=>{const{email,password}=q.body;try{if(email)await X('update users set email=? where id=?',email,q.u.id);if(password){if(password.length<8)return err(s,'Password must be 8+ characters.');await X('update users set pw=? where id=?',bcrypt.hashSync(password,10),q.u.id)}s.json({})}catch(e){err(s,'Email already taken.')}});
 
 // Staff: Admin = view + accept only. Super = everything.
 app.get('/api/admin/bookings',STAFF,async(q,s)=>s.json((await Q('select b.*, b.receipt, c.name cname from bookings b left join courts c on c.id=b.court order by b.date desc,b.hour desc limit 500')).map(fix)));

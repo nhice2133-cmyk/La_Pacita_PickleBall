@@ -1,0 +1,3 @@
+supabase.com
+render.com
+uptimerobot.com
