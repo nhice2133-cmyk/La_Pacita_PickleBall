@@ -13,7 +13,7 @@ create table if not exists bookings(ref text primary key,name text,phone text,em
  for(const t of['users','courts','settings','bookings'])await pool.query(`alter table ${t} enable row level security`); // blocks Supabase's public API; this server bypasses RLS
  if(!await G('select 1 from users')){await X("insert into users(name,email,pw,role) values('Owner',?,?,'super')",E.SUPER_EMAIL||'super@lapacita.ph',bcrypt.hashSync(E.SUPER_PASSWORD||'ChangeMe123',10));
   for(const c of[['Court 1',400],['Court 2',400],['Court 3',450]])await X('insert into courts(name,rate) values(?,?)',...c);
-  for(const x of[['gname','La Pacita Pickle Hub'],['gnum',''],['qr',''],['dp',100]])await ss(...x)}}
+  for(const x of[['gname','La Pacita Pickle Hub'],['gnum',''],['qr',''],['dp',100],['qrcodes','[]']])await ss(...x)}}
 const pht=()=>new Date(Date.now()+288e5),today=()=>pht().toISOString().slice(0,10);
 const taken=async(c,d,h)=>!!await G("select 1 from bookings where court=? and date=? and hour=? and (status in ('Pending','Accepted') or (status='Unpaid' and created>?))",c,d,h,Date.now()-HOLD);
 const fix=b=>b.status=='Unpaid'&&b.created<Date.now()-HOLD?{...b,status:'Expired'}:b;
@@ -36,7 +36,7 @@ app.post('/api/paymongo/webhook',express.raw({type:'*/*'}),async(q,s)=>{
 app.use(express.json({limit:'1mb'}));app.use(express.static('public'));
 
 // Public
-app.get('/api/config',async(q,s)=>{const p=await gs();s.json({mode:MODE,courts:await Q('select id,name,rate from courts where active=1 order by id'),pay:{dp:+p.dp,gname:p.gname,gnum:p.gnum,qr:p.qr}})});
+app.get('/api/config',async(q,s)=>{const p=await gs();let qrcodes=[];try{qrcodes=JSON.parse(p.qrcodes||'[]')}catch(e){}if(!qrcodes.length&&p.qr)qrcodes=[{label:'GCash',img:p.qr}];s.json({mode:MODE,courts:await Q('select id,name,rate from courts where active=1 order by id'),pay:{dp:+p.dp,gname:p.gname,gnum:p.gnum,qr:p.qr,qrcodes}})});
 app.get('/api/slots',async(q,s)=>s.json({taken:(await Q("select hour from bookings where court=? and date=? and (status in ('Pending','Accepted') or (status='Unpaid' and created>?))",+q.query.court||0,String(q.query.date),Date.now()-HOLD)).map(r=>r.hour)}));
 app.post('/api/book',async(q,s)=>{const{name,phone,email,court,date,hour,players,gref}=q.body,c=Number.isInteger(court)?await G('select * from courts where id=? and active=1',court):null;
  if(!c||!String(name||'').trim()||!String(phone||'').trim()||!/^\S+@\S+\.\S+$/.test(email||''))return err(s,'Please complete all details.');
@@ -81,7 +81,7 @@ app.put('/api/admin/users/:id',SUPER,async(q,s)=>{const{active,password}=q.body,
  if(active!==undefined)await X("update users set active=? where id=? and role='admin'",active?1:0,id);s.json({})});
 app.delete('/api/admin/users/:id',SUPER,async(q,s)=>{await X("delete from users where id=? and role='admin'",+q.params.id);s.json({})});
 app.get('/api/admin/settings',SUPER,async(q,s)=>s.json(await gs()));
-app.put('/api/admin/settings',SUPER,async(q,s)=>{for(const k of['gname','gnum','dp','qr']){const v=q.body[k];if(v===undefined)continue;if(k=='dp'&&![30,50,100].includes(+v))continue;if(k=='qr'&&v&&!/^data:image\/(jpeg|png);base64,/.test(v))continue;await ss(k,v)}s.json({})});
+app.put('/api/admin/settings',SUPER,async(q,s)=>{for(const k of['gname','gnum','dp','qr','qrcodes']){const v=q.body[k];if(v===undefined)continue;if(k=='dp'&&![30,50,100].includes(+v))continue;if(k=='qr'&&v&&!/^data:image\/(jpeg|png);base64,/.test(v))continue;if(k=='qrcodes'){try{const arr=typeof v==='string'?JSON.parse(v):v;if(!Array.isArray(arr))continue;await ss(k,JSON.stringify(arr))}catch(e){continue}}else{await ss(k,v)}}s.json({})});
 
 app.use((e,q,s,n)=>{console.error(e);err(s,'Server error',500)});
 init().then(()=>app.listen(E.PORT||3000,()=>console.log('La Pacita Pickle Hub running · payment mode: '+MODE))).catch(e=>{console.error('Database error:',e.message);process.exit(1)});

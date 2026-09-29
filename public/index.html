@@ -9,7 +9,7 @@ const $=s=>document.querySelector(s),today=()=>new Date(Date.now()-new Date().ge
 const H=[...Array(16)].map((_,i)=>i+6),fmt=h=>(h%12||12)+':00 '+(h<12?'AM':'PM'),peso=n=>'₱'+Number(n||0).toLocaleString();
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const api=async(p,m='GET',b)=>{const r=await fetch('/api/'+p,{method:m,headers:{'Content-Type':'application/json'},body:b?JSON.stringify(b):undefined}),j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'Something went wrong');return j};
-let C={courts:[],pay:{}},me=null,S={v:'home',tab:'bk',f:{court:'',date:today(),hour:null},draft:null,done:null,err:'',q:'',st:'',data:[]};
+let C={courts:[],pay:{}},me=null,S={v:'home',tab:'bk',f:{court:'',date:today(),hour:null},draft:null,done:null,err:'',q:'',st:'',data:[],payIdx:0};
 const R=()=>{$('#app').innerHTML=nav()+(S.v=='home'?home():S.v=='login'?login():dash());if(S.v=='home')slots()};
 const nav=()=>`<nav><div class="brand" onclick="S.v='home';R()" style="cursor:pointer"><img src="/assets/logo.jpg" alt="La Pacita Pickle Hub" class="nav-logo"></div><div>${me?`<button class="y sm" onclick="dash0()">Dashboard</button><button class="sm" onclick="logout()">Logout</button>`:`<button class="y sm" onclick="S.v='home';R()">Book</button><button class="sm" onclick="S.v='login';S.err='';R()">Staff Login</button>`}</div></nav>`;
 function home(){return`<div class="hero"><div class="hero-particles"><span></span><span></span><span></span><span></span><span></span></div><img src="/assets/logo.jpg" alt="La Pacita Pickle Hub" class="hero-logo"><p class="hero-tag">Reserve your court &middot; Play under the sun <span class="hero-emoji">🏓</span></p></div>
@@ -25,11 +25,13 @@ function book(){const v=i=>$('#'+i).value.trim(),e=v('be'),q=+v('bq');let m='';
  if(!v('bn')||!v('bp'))m='Please enter your name and mobile number.';else if(S.f.hour==null)m='Please pick a time slot.';else if(!/^\S+@\S+\.\S+$/.test(e))m='Please enter a valid email.';else if(!(q>=1&&q<=8))m='Players must be 1–8.';
  if(m){$('#be2').textContent=m;return}
  S.draft={name:v('bn'),phone:v('bp'),email:e,court:S.f.court,date:S.f.date,hour:S.f.hour,players:q};S.err='';C.mode=='manual'?R():submit()}
-function payCard(){const d=S.draft,c=C.courts.find(x=>x.id==d.court),amt=Math.round(c.rate*C.pay.dp/100);
- return`<h3>PAY WITH GCASH</h3><p><b>${esc(c.name)}</b> · ${esc(d.date)} · ${fmt(d.hour)}</p><div class="ok"><span class="note">Amount to pay${C.pay.dp<100?' ('+C.pay.dp+'% downpayment)':''}</span><b>${peso(amt)}</b></div>
-<div style="text-align:center;margin:14px 0">${C.pay.qr?`<img src="${C.pay.qr}" alt="GCash QR" style="max-width:250px;width:100%;border:4px solid var(--t);border-radius:16px">`:'<p class="note">GCash QR not uploaded yet.</p>'}<br><b>${esc(C.pay.gname)}</b><br>${esc(C.pay.gnum)}</div>
-<ol class="note"><li>Open GCash → Scan QR and pay the exact amount.</li><li>Type the reference number from your GCash receipt.</li></ol>
-<label>GCash reference no.</label><input id="gr" inputmode="numeric"><p class="err" id="ge"></p><button class="gh" onclick="S.draft=null;R()">Back</button> <button class="y" onclick="submit()">I've paid – submit</button>`}
+function payCard(){const d=S.draft,c=C.courts.find(x=>x.id==d.court),amt=Math.round(c.rate*C.pay.dp/100),qrs=C.pay.qrcodes||[];
+ return`<h3>CHOOSE PAYMENT METHOD</h3><p><b>${esc(c.name)}</b> · ${esc(d.date)} · ${fmt(d.hour)}</p><div class="ok"><span class="note">Amount to pay${C.pay.dp<100?' ('+C.pay.dp+'% downpayment)':''}</span><b>${peso(amt)}</b></div>
+${qrs.length?`<div class="pay-methods">${qrs.map((q,i)=>`<button class="pay-method ${S.payIdx==i?'active':''}" onclick="S.payIdx=${i};R()">${esc(q.label)}</button>`).join('')}</div>
+<div class="qr-display"><img src="${qrs[S.payIdx].img}" alt="${esc(qrs[S.payIdx].label)} QR" class="qr-img"><p class="qr-label">${esc(qrs[S.payIdx].label)}</p></div>`:'<p class="note" style="text-align:center;margin:16px 0">No payment QR codes set up yet.</p>'}
+<div style="text-align:center;margin:6px 0"><b>${esc(C.pay.gname)}</b><br>${esc(C.pay.gnum)}</div>
+<ol class="note"><li>Open your payment app → Scan the QR and pay the exact amount.</li><li>Type the reference number from your receipt below.</li></ol>
+<label>Payment reference no.</label><input id="gr" inputmode="numeric"><p class="err" id="ge"></p><button class="gh" onclick="S.draft=null;S.payIdx=0;R()">Back</button> <button class="y" onclick="submit()">I've paid – submit</button>`}
 async function submit(){try{const r=await api('book','POST',{...S.draft,gref:$('#gr')?.value});if(r.url)return location.href=r.url;S.done=r;S.draft=null;S.f.hour=null;R()}
  catch(e){S.err=e.message;const el=$('#ge')||$('#be2');if(el)el.textContent=e.message;else{S.draft=null;R()}}}
 async function look(r){r=r||$('#lk').value.trim();try{const b=await api('booking/'+encodeURIComponent(r));$('#lr').innerHTML=`<b>${esc(b.ref)}</b> · ${esc(b.court)} · ${esc(b.date)} ${fmt(b.hour)} · <span class="b ${b.status}">${b.status}</span>`}catch(e){$('#lr').textContent=e.message}}
@@ -53,10 +55,16 @@ const ad=()=>`<div class="row"><div><label>Name</label><input id="an"></div><div
 async function addAd(){try{await api('admin/users','POST',{name:$('#an').value.trim(),email:$('#ae').value.trim(),password:$('#ap').value});S.err='';tab('ad')}catch(e){S.err=e.message;R()}}
 async function ua(id,b){await api('admin/users/'+id,'PUT',b);tab('ad')}
 function pw(id){const p=prompt('New password (8+ characters):');if(p)ua(id,{password:p}).catch(e=>alert(e.message))}
-const se=()=>{const s=S.data;return`<div class="grid"><div><label>GCash account name</label><input value="${esc(s.gname)}" onchange="sv('gname',this.value)"></div><div><label>GCash number</label><input value="${esc(s.gnum)}" onchange="sv('gnum',this.value)"></div><div><label>Payment required</label><select onchange="sv('dp',+this.value)">${[100,50,30].map(x=>`<option value="${x}" ${s.dp==x?'selected':''}>${x==100?'Full payment':x+'% downpayment'}</option>`).join('')}</select></div></div>
-<label style="margin-top:12px">Your GCash QR (screenshot from GCash → Receive Money → QR) — used in manual payment mode</label><input type="file" accept="image/*" onchange="upQR(this.files[0])">${s.qr?`<img src="${s.qr}" alt="QR" style="max-width:200px;margin-top:10px;border-radius:12px;display:block">`:''}`};
+const se=()=>{const s=S.data;let qrcodes=[];try{qrcodes=JSON.parse(s.qrcodes||'[]')}catch(e){}return`<div class="grid"><div><label>Account name</label><input value="${esc(s.gname)}" onchange="sv('gname',this.value)"></div><div><label>Account number</label><input value="${esc(s.gnum)}" onchange="sv('gnum',this.value)"></div><div><label>Payment required</label><select onchange="sv('dp',+this.value)">${[100,50,30].map(x=>`<option value="${x}" ${s.dp==x?'selected':''}>${x==100?'Full payment':x+'% downpayment'}</option>`).join('')}</select></div></div>
+<h3 style="margin-top:20px">PAYMENT QR CODES</h3><p class="note">Add QR codes for each payment method you accept (GCash, Maya, Bank, etc.). Customers will choose which one to use.</p>
+<div id="qr-list">${qrcodes.map((q,i)=>`<div class="qr-card"><div class="qr-card-header"><input value="${esc(q.label)}" placeholder="Label e.g. GCash" onchange="updQR(${i},'label',this.value)"><button class="sm r" onclick="delQR(${i})">Remove</button></div>${q.img?`<img src="${q.img}" class="qr-preview">`:''}<input type="file" accept="image/*" onchange="upQRFile(${i},this.files[0])"></div>`).join('')||'<p class="note">No QR codes added yet.</p>'}</div>
+<button style="margin-top:12px" onclick="addQR()">+ Add QR code</button>`};
+function getQRCodes(){try{return JSON.parse(S.data.qrcodes||'[]')}catch(e){return[]}}
+async function addQR(){const qrs=getQRCodes();qrs.push({label:'',img:''});await sv('qrcodes',JSON.stringify(qrs));tab('se')}
+async function delQR(i){const qrs=getQRCodes();qrs.splice(i,1);await sv('qrcodes',JSON.stringify(qrs));tab('se')}
+async function updQR(i,k,v){const qrs=getQRCodes();qrs[i][k]=v;await sv('qrcodes',JSON.stringify(qrs));tab('se')}
+async function upQRFile(i,f){const img=await shrink(f,600,.92);if(!img)return;const qrs=getQRCodes();qrs[i].img=img;await sv('qrcodes',JSON.stringify(qrs));tab('se')}
 const sv=(k,v)=>api('admin/settings','PUT',{[k]:v}).then(()=>api('config').then(c=>C=c));
 const shrink=(f,m,q)=>new Promise(r=>{if(!f)return r('');const i=new Image;i.onload=()=>{const k=Math.min(1,m/i.width),c=document.createElement('canvas');c.width=i.width*k;c.height=i.height*k;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(i,0,0,c.width,c.height);r(c.toDataURL('image/jpeg',q))};i.onerror=()=>r('');i.src=URL.createObjectURL(f)});
-async function upQR(f){await sv('qr',await shrink(f,600,.92));tab('se')}
 (async()=>{C=await api('config');S.f.court=C.courts[0]?.id;try{me=await api('me')}catch(e){}R();const p=new URLSearchParams(location.search);if(p.get('paid'))look(p.get('paid'));if(p.get('cancel'))$('#lr').textContent='Payment was cancelled. Your slot is held for 10 minutes; book again if needed.'})();
 </script></body></html>

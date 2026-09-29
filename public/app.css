@@ -658,6 +658,122 @@ tr:hover td { background: rgba(34,197,94,.03); }
 ::-webkit-scrollbar-thumb:hover { background: var(--primary-dim); }
 
 
+/* --- Payment Method Selector (Customer) --- */
+.pay-methods {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 18px 0 6px;
+}
+
+.pay-method {
+  padding: 10px 22px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: rgba(255,255,255,.03);
+  color: var(--tx-dim);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.pay-method::before { display: none; }
+
+.pay-method:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(34,197,94,.06);
+  box-shadow: 0 0 15px var(--primary-glow);
+  transform: translateY(-1px);
+}
+
+.pay-method.active {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dim));
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 4px 20px var(--primary-glow);
+}
+
+.pay-method.active:hover { transform: translateY(-1px); }
+
+/* --- QR Code Display (Customer) --- */
+.qr-display {
+  text-align: center;
+  margin: 16px auto;
+  padding: 20px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  max-width: 320px;
+  animation: qrFadeIn .35s ease-out;
+}
+
+@keyframes qrFadeIn {
+  from { opacity: 0; transform: scale(.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.qr-img {
+  max-width: 240px;
+  width: 100%;
+  border-radius: 14px;
+  border: 3px solid var(--primary);
+  box-shadow: 0 0 30px var(--primary-glow);
+  transition: var(--transition);
+}
+
+.qr-img:hover {
+  box-shadow: 0 0 40px var(--primary-glow), 0 0 60px rgba(34,197,94,.15);
+  transform: scale(1.02);
+}
+
+.qr-label {
+  margin: 10px 0 0;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--primary);
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+
+/* --- Admin QR Card Management --- */
+.qr-card {
+  background: rgba(255,255,255,.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: var(--transition);
+}
+
+.qr-card:hover {
+  border-color: var(--border-hover);
+  box-shadow: 0 4px 20px rgba(0,0,0,.2);
+}
+
+.qr-card-header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.qr-card-header input { flex: 1; }
+
+.qr-preview {
+  max-width: 160px;
+  width: 100%;
+  border-radius: 10px;
+  border: 2px solid var(--border);
+  display: block;
+  margin: 8px 0;
+}
+
+
 /* ========== RESPONSIVE BREAKPOINTS ========== */
 
 /* Tablet (≤768px) */
@@ -699,6 +815,12 @@ tr:hover td { background: rgba(34,197,94,.03); }
   table { min-width: 480px; font-size: 11px; }
   th { font-size: 9px; padding: 5px; }
   .login { margin: 24px auto; }
+  .pay-methods { gap: 6px; }
+  .pay-method { padding: 8px 16px; font-size: 12px; }
+  .qr-display { padding: 14px; max-width: 280px; }
+  .qr-img { max-width: 200px; }
+  .qr-card { padding: 12px; }
+  .qr-preview { max-width: 120px; }
 }
 
 /* Phone (≤480px) */
@@ -732,6 +854,14 @@ tr:hover td { background: rgba(34,197,94,.03); }
   .b { padding: 2px 8px; font-size: 10px; }
   .note { font-size: 11px; }
   .login { max-width: 100%; margin: 16px auto; }
+  .pay-methods { gap: 5px; margin: 12px 0 4px; }
+  .pay-method { padding: 7px 12px; font-size: 11px; flex: 1; min-width: 0; text-align: center; }
+  .qr-display { padding: 12px; max-width: 260px; }
+  .qr-img { max-width: 180px; border-width: 2px; }
+  .qr-label { font-size: 13px; }
+  .qr-card { padding: 10px; }
+  .qr-card-header { flex-wrap: wrap; }
+  .qr-preview { max-width: 100px; }
 }
 
 /* Very small phone (≤360px) */
