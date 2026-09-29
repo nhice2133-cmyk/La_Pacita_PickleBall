@@ -69,9 +69,9 @@ app.post('/api/admin/bookings/:ref/status',STAFF,async(q,s)=>{const st=q.body.st
  await X('update bookings set status=? where ref=?',st,b.ref);s.json({ok:1})});
 
 // Super Admin only
-app.get('/api/admin/courts',SUPER,async(q,s)=>s.json(await Q('select * from courts order by id')));
-app.post('/api/admin/courts',SUPER,async(q,s)=>{await X('insert into courts(name,rate) values(?,400)','Court '+((await Q('select 1 from courts')).length+1));s.json({})});
-app.put('/api/admin/courts/:id',SUPER,async(q,s)=>{const{name,rate,active}=q.body;await X('update courts set name=?,rate=?,active=? where id=?',String(name).slice(0,40),Math.max(0,+rate|0),active?1:0,+q.params.id);s.json({})});
+app.get('/api/admin/courts',STAFF,async(q,s)=>s.json(await Q('select * from courts order by id')));
+app.post('/api/admin/courts',STAFF,async(q,s)=>{await X('insert into courts(name,rate) values(?,400)','Court '+((await Q('select 1 from courts')).length+1));s.json({})});
+app.put('/api/admin/courts/:id',STAFF,async(q,s)=>{const{name,rate,active}=q.body;await X('update courts set name=?,rate=?,active=? where id=?',String(name).slice(0,40),Math.max(0,+rate|0),active?1:0,+q.params.id);s.json({})});
 app.get('/api/admin/users',SUPER,async(q,s)=>s.json(await Q("select id,name,email,active from users where role='admin' order by id")));
 app.post('/api/admin/users',SUPER,async(q,s)=>{const{name,email,password}=q.body;
  if(!name||!/^\S+@\S+\.\S+$/.test(email||'')||String(password||'').length<8)return err(s,'Enter a name, valid email and a password of 8+ characters.');

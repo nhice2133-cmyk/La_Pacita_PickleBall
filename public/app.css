@@ -488,14 +488,15 @@ input[type="file"]::file-selector-button:hover {
 
 /* --- Ribbon (Login) --- */
 .ribbon {
-  background: linear-gradient(135deg, var(--primary-dim), #0f5132);
+  background: linear-gradient(135deg, var(--primary), var(--primary-dim));
   color: #fff;
   font: 20px 'Anton', Impact, sans-serif;
   letter-spacing: 2px;
   padding: 10px 24px;
-  margin: -6px -26px 18px;
-  clip-path: polygon(0 0, 100% 0, 96% 50%, 100% 100%, 0 100%, 4% 50%);
+  margin-bottom: 24px;
+  border-radius: var(--radius-sm);
   text-align: center;
+  box-shadow: 0 4px 15px var(--primary-glow);
 }
 
 /* --- Success Box --- */
