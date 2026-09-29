@@ -1,6 +1,0 @@
-PyZQxZWxYg1kI0JO
-
-postgresql://postgres.pzaqgoiyjyfxytqziijs:PyZQxZWxYg1kI0JO@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres
-
-git branch -M main
-git remote add origin https://github.com/nhice2133-cmyk/La_Pacita_PickleBall.git
