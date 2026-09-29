@@ -2,6 +2,7 @@
 
 /* --- Design Tokens --- */
 :root {
+  color-scheme: dark;
   --primary: #22c55e;
   --primary-dim: #16a34a;
   --primary-glow: rgba(34,197,94,.35);
@@ -385,6 +386,17 @@ input, select {
   font-size: 14px;
   transition: var(--transition);
   outline: none;
+  color-scheme: dark;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: invert(1) opacity(0.7);
+  transition: var(--transition);
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  filter: invert(1) opacity(1) drop-shadow(0 0 5px var(--primary-glow));
 }
 
 input:focus, select:focus {
