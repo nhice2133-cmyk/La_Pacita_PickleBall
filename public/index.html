@@ -1,7 +1,8 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#050d09">
 <title>La Pacita Pickle Hub – Book a Court</title>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Pacifico&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/app.css"></head><body><div id="app"></div>
 <script>
 const $=s=>document.querySelector(s),today=()=>new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
@@ -11,7 +12,7 @@ const api=async(p,m='GET',b)=>{const r=await fetch('/api/'+p,{method:m,headers:{
 let C={courts:[],pay:{}},me=null,S={v:'home',tab:'bk',f:{court:'',date:today(),hour:null},draft:null,done:null,err:'',q:'',st:'',data:[]};
 const R=()=>{$('#app').innerHTML=nav()+(S.v=='home'?home():S.v=='login'?login():dash());if(S.v=='home')slots()};
 const nav=()=>`<nav><div class="brand" onclick="S.v='home';R()" style="cursor:pointer"><img src="/assets/logo.jpg" alt="La Pacita Pickle Hub" class="nav-logo"></div><div>${me?`<button class="y sm" onclick="dash0()">Dashboard</button><button class="sm" onclick="logout()">Logout</button>`:`<button class="y sm" onclick="S.v='home';R()">Book</button><button class="sm" onclick="S.v='login';S.err='';R()">Staff Login</button>`}</div></nav>`;
-function home(){return`<div class="hero"><img src="/assets/logo.jpg" alt="La Pacita Pickle Hub" class="hero-logo"><p>Reserve your court. Play under the sun. 🏓</p></div>
+function home(){return`<div class="hero"><div class="hero-particles"><span></span><span></span><span></span><span></span><span></span></div><img src="/assets/logo.jpg" alt="La Pacita Pickle Hub" class="hero-logo"><p class="hero-tag">Reserve your court &middot; Play under the sun <span class="hero-emoji">🏓</span></p></div>
 <div class="wrap"><div class="card">${S.draft&&!S.done?payCard():S.done?`<div class="ok">Booking request sent! Your code:<b>${esc(S.done.ref)}</b>${esc(S.done.court)} · ${esc(S.done.date)} · ${fmt(S.done.hour)}<br>Payment submitted – awaiting staff confirmation<br><br><button onclick="S.done=null;R()">Book another</button></div>`:form()}</div>
 <div class="card"><h3>CHECK MY BOOKING</h3><div class="row"><input id="lk" placeholder="Booking code e.g. LP-1A2B3C"><button onclick="look()">Check</button></div><p id="lr" class="note"></p></div></div>`}
 function form(){return`<h3>BOOK A COURT</h3><div class="grid"><div><label>Court</label><select onchange="S.f.court=+this.value;S.f.hour=null;slots()">${C.courts.map(c=>`<option value="${c.id}" ${c.id==S.f.court?'selected':''}>${esc(c.name)} – ${peso(c.rate)}/hr</option>`).join('')}</select></div><div><label>Date</label><input type="date" min="${today()}" value="${S.f.date}" onchange="S.f.date=this.value||today();S.f.hour=null;slots()"></div></div>
