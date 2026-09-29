@@ -394,6 +394,35 @@ input:focus, select:focus {
 
 input::placeholder { color: var(--tx-muted); }
 
+input[type="file"] {
+  padding: 7px 10px;
+  color: var(--tx-dim);
+  cursor: pointer;
+  background: rgba(255,255,255,.02);
+}
+
+input[type="file"]::-webkit-file-upload-button,
+input[type="file"]::file-selector-button {
+  font: 600 12px 'Poppins', sans-serif;
+  background: rgba(34,197,94,.1);
+  color: var(--primary);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 6px 14px;
+  margin-right: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+input[type="file"]::-webkit-file-upload-button:hover,
+input[type="file"]::file-selector-button:hover {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dim));
+  color: #fff;
+  border-color: rgba(255,255,255,.15);
+  box-shadow: 0 4px 15px var(--primary-glow);
+  transform: translateY(-1px);
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
