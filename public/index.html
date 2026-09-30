@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="/app.css"></head><body><div id="app"></div>
 <script>
 const $=s=>document.querySelector(s),today=()=>new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
-const H=[...Array(16)].map((_,i)=>i+6),fmt=h=>(h%12||12)+':00 '+(h<12?'AM':'PM'),peso=n=>'₱'+Number(n||0).toLocaleString();
+const H=[...Array(18)].map((_,i)=>i+6),fmt=h=>(h%12||12)+':00 '+(h<12?'AM':'PM'),peso=n=>'₱'+Number(n||0).toLocaleString();
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const api=async(p,m='GET',b)=>{const r=await fetch('/api/'+p,{method:m,headers:{'Content-Type':'application/json'},body:b?JSON.stringify(b):undefined}),j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'Something went wrong');return j};
 let C={courts:[],pay:{}},me=null,S={v:'home',tab:'bk',f:{court:'',date:today(),hour:null},draft:null,done:null,err:'',q:'',st:'',data:[],payIdx:0};
